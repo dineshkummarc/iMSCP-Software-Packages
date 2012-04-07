@@ -1,0 +1,486 @@
+#!/usr/bin/perl
+# i-MSCP a internet Multi Server Control Panel
+#
+# Copyright (C) 2010 by internet Multi Server Control Panel - http://i-mscp.net
+#
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.1 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+# License for the specific language governing rights and limitations
+# under the License.
+#
+# The Original Code is "i-MSCP a internet Multi Server Control Panel".
+#
+# The Initial Developer of the Original Code is ispCP Team.
+# Portions created by Initial Developer are Copyright (C) 2010 by
+# i-MSCP a internet Multi Server Control Panel. All Rights Reserved.
+#
+# The i-MSCP Home Page is:
+#
+#    http://i-mscp.net
+#
+
+use Digest::MD5 qw(md5_hex);
+
+use strict;
+use warnings;
+
+################################################################################
+#
+# Load configuration from i-MSCP configuration file
+#
+# @return int 0 on success, negative int otherwise
+#
+sub getConf {
+	my $file;
+	if(-e '/usr/local/etc/imscp/imscp.conf'){
+		$file = '/usr/local/etc/imscp/imscp.conf';
+	} elsif(-e '/etc/imscp/imscp.conf') {
+		$file = '/etc/imscp/imscp.conf';
+	} else {
+		return -1;
+	}
+	return -1 if ! open F, '<', $file;
+	%main::cfg = join('', <F>) =~ /^\s*(\w+)\s*=\s*(.*)$/gm;
+	close F;
+	%main::cfg ? 0 : 1;
+}
+
+my ($sw_database_pass_clear, $sw_database_pass_md5, $sw_install_pass_clear, $sw_install_pass_md5, $sql, $url_path, $DBname, $hostname, $dbUser, $dbPassword);
+my ($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path);
+
+sub extract_variables {
+	my $crypted_array = shift;
+	my $uncrypted_array = decode_base64($crypted_array);
+	($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path)=split(/,/, $uncrypted_array);
+	if($processing_type && $sw_software_prefix && $sw_database && $sw_database_user && $sw_database_tmp_pwd && $sw_install_username && $sw_install_password && $sw_install_email && $domain_name && $sw_dest_path && $sw_path) {
+		if ($sw_database ne "not_required") {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = md5_hex($sw_database_pass_clear);
+			#New database connection to the user database
+			imscp_installer_set_new_db_connection($sw_database,$sw_database_user,$sw_database_pass_clear);
+		} else {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = $sw_database_tmp_pwd;
+		}
+		$sw_install_pass_clear = $sw_install_password;
+		$sw_install_pass_md5 = md5_hex($sw_install_pass_clear);
+	} else {
+		print "[DEGUB] i-MSCP installer file - Some variables not defined in the uncrytped string\n";
+		exit();
+	}
+}
+
+sub imscp_installer_set_new_db_connection {
+	@main::db_connect = undef;
+	$DBname = shift;
+	$dbUser = shift;
+	$dbPassword = shift;
+	$hostname = 'localhost';
+	@main::db_connect = ("DBI:mysql:$DBname:$hostname", $dbUser, $dbPassword);
+}
+
+sub imscp_installer_package_start {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process start\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process start\n";
+	}
+}
+
+sub imscp_installer_package_end {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process end\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process end\n";
+	}
+	setup_main_vars();
+}
+
+if(getConf() != 0) {
+	print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+} else {
+	#
+	# Do not make changes to this static vars
+	#
+	
+	sub get_inc_path {
+		if(getConf() != 0) {
+			print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+		} else {
+			my $imscp_path = $main::cfg{'ROOT_DIR'}.'/engine';
+		}
+	}
+	use lib get_inc_path();
+	require 'imscp_common_code.pl';
+	
+	my $crypted_array = $ARGV[0];
+	if ($crypted_array) {
+		extract_variables("$crypted_array");
+		my $db_tables = "sql_tables";
+		$url_path = $sw_path;
+		$url_path =~ s/^\/.*htdocs//g;
+
+		#
+		# This is the place for dynamic vars
+		#
+		
+		my $config_file = "wcf/config.inc.php";
+		my $option_file = "options.inc.php";
+		my $wbbprefixe = $sw_software_prefix;
+		my ($sw_software_prefix_wbb,$sw_software_prefix_wcf) = split(/:/, $wbbprefixe);
+		my $table_users = "user";
+		my $new_table_users = $sw_software_prefix_wcf.$table_users;
+		my $table_option = "option";
+		my $new_table_option = $sw_software_prefix_wcf.$table_option;
+		my $db_tables_2 = "sql_tables_2";
+		
+		if($processing_type eq "install") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+			
+			my $configfile_entry = "<?php
+\$dbHost = 'localhost';
+\$dbUser = '$sw_database_user';
+\$dbPassword = '$sw_database_pass_clear';
+\$dbName = '$sw_database';
+\$dbCharset = 'utf8';
+\$dbClass = 'MySQLDatabase';
+if (!defined('WCF_N')) define('WCF_N', 1);
+?>";
+			open(CONFIGFILE,'>'.$sw_dest_path.'/'.$config_file);
+			print CONFIGFILE "$configfile_entry";
+			close CONFIGFILE;
+
+			my $optionfile_entry = "<?php
+/**
+* generated by i-MSCP application installer
+*/
+define('ACTIVITY_POINTS_PER_POST', 5);
+define('ACTIVITY_POINTS_PER_THREAD', 10);
+define('ATTACHMENT_ENABLE_CONTENT_PREVIEW', 1);
+define('ATTACHMENT_ENABLE_THUMBNAILS', 1);
+define('ATTACHMENT_THUMBNAIL_ADD_SOURCE_INFO', 1);
+define('ATTACHMENT_THUMBNAIL_HEIGHT', 160);
+define('ATTACHMENT_THUMBNAIL_USE_EMBEDDED', 1);
+define('ATTACHMENT_THUMBNAIL_WIDTH', 160);
+define('BLACKLIST_HOSTNAMES', '');
+define('BLACKLIST_IP_ADDRESSES', '');
+define('BLACKLIST_USER_AGENTS', '');
+define('BOARD_DEFAULT_SORT_FIELD', 'lastPostTime');
+define('BOARD_DEFAULT_SORT_ORDER', 'DESC');
+define('BOARD_LIST_DEPTH', 2);
+define('BOARD_LIST_ENABLE_LAST_POST', 1);
+define('BOARD_THREADS_PER_PAGE', 20);
+define('CACHE_SOURCE_MEMCACHE_HOST', '');
+define('CACHE_SOURCE_MEMCACHE_USE_PCONNECT', 0);
+define('CACHE_SOURCE_TYPE', 'disk');
+define('CAPTCHA_FONT_MORPH', 1);
+define('CAPTCHA_RANDOM_BACKGROUND', 1);
+define('CAPTCHA_RANDOM_FONT_COLOR', 1);
+define('CAPTCHA_RANDOM_FONT_FACE', 1);
+define('CAPTCHA_RANDOM_FONT_SIZE', 0);
+define('CAPTCHA_RANDOM_LINES', 0);
+define('CENSORED_WORDS', '');
+define('COOKIE_DOMAIN', '');
+define('COOKIE_PATH', '');
+define('COOKIE_PREFIX', 'wcf_');
+define('COPPA_ADDRESS', '');
+define('COPPA_DELETION_TIME', 7);
+define('COPPA_EMAIL_ADDRESS', '');
+define('COPPA_FAX', '');
+define('ENABLE_CENSORSHIP', 0);
+define('ENABLE_DAYLIGHT_SAVING_TIME', 1);
+define('ENABLE_SESSION_DATA_CACHE', 0);
+define('ENCRYPTION_ENABLE_SALTING', 1);
+define('ENCRYPTION_ENCRYPT_BEFORE_SALTING', 1);
+define('ENCRYPTION_METHOD', 'sha1');
+define('ENCRYPTION_SALT_POSITION', 'before');
+define('HTTP_CONTENT_TYPE_XHTML', 0);
+define('HTTP_ENABLE_GZIP', 1);
+define('HTTP_ENABLE_NO_CACHE_HEADERS', 0);
+define('HTTP_GZIP_LEVEL', 1);
+define('INDEX_ENABLE_STATS', 1);
+define('INLINE_IMAGE_MAX_WIDTH', 530);
+define('INSTALL_DATE', 1291275381);
+define('LEGAL_NOTICE_ADDITIONAL_TEXT', '');
+define('LEGAL_NOTICE_ADDITIONAL_TEXT_ENABLE_HTML', 0);
+define('LEGAL_NOTICE_ADDRESS', '');
+define('LEGAL_NOTICE_EMAIL_ADDRESS', '');
+define('LEGAL_NOTICE_FAX', '');
+define('LEGAL_NOTICE_PHONE', '');
+define('LEGAL_NOTICE_REGISTER', '');
+define('LEGAL_NOTICE_REPRESENTATIVE', '');
+define('LEGAL_NOTICE_URL', '');
+define('LEGAL_NOTICE_USE_URL', 0);
+define('LEGAL_NOTICE_VAT_ID', '');
+define('LOGIN_USE_CAPTCHA', 0);
+define('LOST_PASSWORD_USE_CAPTCHA', 0);
+define('MAIL_ADMIN_ADDRESS', '');
+define('MAIL_DEBUG_LOGFILE_PATH', '');
+define('MAIL_FROM_ADDRESS', '');
+define('MAIL_FROM_NAME', '');
+define('MAIL_SEND_METHOD', 'php');
+define('MAIL_SIGNATURE', '');
+define('MAIL_SMTP_HOST', '');
+define('MAIL_SMTP_PASSWORD', '');
+define('MAIL_SMTP_PORT', 25);
+define('MAIL_SMTP_USER', '');
+define('MAIL_USE_FORMATTED_ADDRESS', 0);
+define('MAIL_USE_F_PARAM', 0);
+define('MEMBERS_LIST_COLUMNS', 'username,avatar,email,homepage,registrationDate,posts');
+define('MEMBERS_LIST_DEFAULT_SORT_FIELD', 'posts');
+define('MEMBERS_LIST_DEFAULT_SORT_ORDER', 'DESC');
+define('MEMBERS_LIST_USERS_PER_PAGE', 30);
+define('MESSAGE_FORM_DEFAULT_ENABLE_BBCODES', 1);
+define('MESSAGE_FORM_DEFAULT_ENABLE_HTML', 0);
+define('MESSAGE_FORM_DEFAULT_ENABLE_SMILIES', 1);
+define('MESSAGE_FORM_DEFAULT_PARSE_URL', 1);
+define('MESSAGE_SIDEBAR_ENABLE_AVATAR', 1);
+define('MESSAGE_SIDEBAR_ENABLE_FRIEND_ICON', 1);
+define('MESSAGE_SIDEBAR_ENABLE_ONLINE_STATUS', 1);
+define('MESSAGE_SIDEBAR_ENABLE_RANK', 1);
+define('MESSAGE_SIDEBAR_ENABLE_REGISTRATION_DATE', 0);
+define('MESSAGE_SIDEBAR_ENABLE_USER_POSTS', 1);
+define('MESSAGE_SIDEBAR_SHOW_USER_OPTIONS', 'location,occupation,homepage,email,icq,skype');
+define('MESSAGE_SUBJECT_STOP_SHOUTING', 5);
+define('META_DESCRIPTION', '');
+define('META_KEYWORDS', '');
+define('MODULE_ATTACHMENT', 1);
+define('MODULE_AVATAR', 1);
+define('MODULE_GRAVATAR', 0);
+define('MODULE_HELP', 1);
+define('MODULE_LEGAL_NOTICE', 1);
+define('MODULE_MASTER_PASSWORD', 0);
+define('MODULE_MEMBERS_LIST', 1);
+define('MODULE_PM', 1);
+define('MODULE_POLL', 1);
+define('MODULE_SMILEY', 1);
+define('MODULE_USER_RANK', 1);
+define('MODULE_USER_SIGNATURE', 1);
+define('PAGE_DESCRIPTION', '');
+define('PAGE_TITLE', '".$domain_name."');
+define('PAGE_URL', 'http://".$domain_name."/".$url_path."');
+define('PAGE_URLS', '');
+define('PM_DEFAULT_SORT_FIELD', 'time');
+define('PM_DEFAULT_SORT_ORDER', 'DESC');
+define('PM_MESSAGES_PER_PAGE', 10);
+define('POLL_MAX_OPTIONS', 20);
+define('POST_ADD_USE_CAPTCHA', 1);
+define('PROFILE_MAIL_USE_CAPTCHA', 1);
+define('PROFILE_SHOW_OLD_USERNAME', 182);
+define('PROXY_SERVER_FTP', '');
+define('PROXY_SERVER_HTTP', '');
+define('REGISTER_ACTIVATION_METHOD', '1');
+define('REGISTER_ADMIN_NOTIFICATION', 0);
+define('REGISTER_ALLOWED_EMAILS', '');
+define('REGISTER_DISABLED', 0);
+define('REGISTER_ENABLE_DISCLAIMER', 1);
+define('REGISTER_ENABLE_PASSWORD_SECURITY_CHECK', 0);
+define('REGISTER_FORBIDDEN_EMAILS', '');
+define('REGISTER_FORBIDDEN_USERNAMES', '');
+define('REGISTER_PASSWORD_MIN_LENGTH', 8);
+define('REGISTER_PASSWORD_MUST_CONTAIN_DIGIT', 1);
+define('REGISTER_PASSWORD_MUST_CONTAIN_LOWER_CASE', 1);
+define('REGISTER_PASSWORD_MUST_CONTAIN_SPECIAL_CHAR', 1);
+define('REGISTER_PASSWORD_MUST_CONTAIN_UPPER_CASE', 1);
+define('REGISTER_UNIQUE_IP_ADDRESS', 3600);
+define('REGISTER_USERNAME_MAX_LENGTH', 25);
+define('REGISTER_USERNAME_MIN_LENGTH', 3);
+define('REGISTER_USE_CAPTCHA', 1);
+define('SEARCH_DEFAULT_SORT_FIELD', 'relevance');
+define('SEARCH_DEFAULT_SORT_ORDER', 'DESC');
+define('SEARCH_RESULTS_PER_PAGE', 20);
+define('SEARCH_USE_CAPTCHA', 0);
+define('SESSION_TIMEOUT', 1800);
+define('SESSION_VALIDATE_IP_ADDRESS', '2');
+define('SESSION_VALIDATE_USER_AGENT', 1);
+define('SHOW_CLOCK', 1);
+define('SHOW_VERSION_NUMBER', 1);
+define('THREAD_POSTS_PER_PAGE', 20);
+define('TIMEZONE', '0');
+define('USER_FORBIDDEN_TITLES', '');
+define('USER_ONLINE_TIMEOUT', 900);
+define('VISIT_TIME_FRAME', 259200);
+define('WYSIWYG_EDITOR_HEIGHT', 200);
+define('WYSIWYG_EDITOR_MODE', 1);
+?>";
+			open(CONFIGFILE,'>'.$sw_dest_path.'/'.$option_file);
+			print CONFIGFILE "$optionfile_entry";
+			close CONFIGFILE;
+
+			#Dump import
+			sys_command("mysql -u".$sw_database_user." -p".$sw_database_pass_clear." ".$sw_database." < ./sql/sql.sql");
+
+			#Rename SQL-Tables
+			open(SQL_TABLES,'<'.$db_tables) or die("Unable to open file: ".$db_tables);
+			my @sql_table_data = <SQL_TABLES>;
+			chomp (@sql_table_data);
+			close(SQL_TABLES);
+			foreach my $sql_table_data_line (@sql_table_data) {
+				$sql = "
+					RENAME TABLE
+						`".$sql_table_data_line."`
+					TO 
+						`".$sw_software_prefix_wbb.$sql_table_data_line."`
+					;
+				";
+				doSQL($sql);
+			}
+
+			#Rename SQL-Tables
+			open(SQL_TABLES_2,'<'.$db_tables_2) or die("Unable to open file: ".$db_tables_2);
+			my @sql_table_data_2 = <SQL_TABLES_2>;
+			chomp (@sql_table_data_2);
+			close(SQL_TABLES_2);
+			foreach my $sql_table_data_line_2 (@sql_table_data_2) {
+				$sql = "
+					RENAME TABLE
+						`".$sql_table_data_line_2."`
+					TO 
+						`".$sw_software_prefix_wcf.$sql_table_data_line_2."`
+					;
+				";
+				doSQL($sql);
+			}
+			
+			$sql = "
+				UPDATE
+					`".$new_table_option."`
+				SET
+					`optionValue` = 'http://".$domain_name."/".$url_path."'
+					
+				WHERE
+					`optionID` = '71'
+				;
+			";
+			doSQL($sql);
+			$sql = "
+				UPDATE
+					`".$new_table_option."`
+				SET
+					`optionValue` = '/".$url_path."'
+					
+				WHERE
+					`optionID` = '74'
+				;
+			";
+			doSQL($sql);
+			$sql = "
+				UPDATE
+					`".$new_table_option."`
+				SET
+					`optionValue` = '".$domain_name."'
+					
+				WHERE
+					`optionID` = '118'
+				;
+			";
+			doSQL($sql);
+			$sql = "
+				UPDATE
+					`".$new_table_option."`
+				SET
+					`optionValue` = 'http://".$domain_name."/".$url_path."'
+					
+				WHERE
+					`optionID` = '120'
+				;
+			";
+			doSQL($sql);
+			$sql = "
+				UPDATE
+					`".$new_table_users."`
+				SET
+					`email` = '".$sw_install_email."',
+					`registrationDate` = UNIX_TIMESTAMP(),
+					`username` = '".$sw_install_username."'
+					
+				WHERE
+					`username` = 'admin'
+				;
+			";
+			doSQL($sql);
+			
+			#
+			# This is the place to get the wbblite salt and create a new password
+			#
+			
+			$sql = "
+				SELECT
+					`salt`
+				FROM
+					`".$new_table_users."`
+				WHERE
+					`username` = '".$sw_install_username."'
+				;
+			";
+			my ($rs, $rows) = doHashSQL($sql,'salt');
+			my @keys = keys(%$rows);
+			my $wbbsaltdatabase;
+			foreach (@keys) {
+				($wbbsaltdatabase) = (@$rows{$_}->{'salt'});
+			}
+			my $wbblitepasswordhash = `$main::cfg{'CMD_PHP'} -n ./makepassword.php $sw_install_pass_clear $wbbsaltdatabase`;
+			$sql = "
+				UPDATE
+					`".$new_table_users."`
+				SET
+					`password` = '".$wbblitepasswordhash."'
+					
+				WHERE
+					`username` = '".$sw_install_username."'
+				;
+			";
+			doSQL($sql);
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		} elsif ($processing_type eq "uninstall") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+
+			#Drop existing SQL-Tables
+			open(SQL_TABLES,'<'.$db_tables) or die("Unable to open file: ".$db_tables);
+			my @sql_table_data = <SQL_TABLES>;
+			chomp (@sql_table_data);
+			close(SQL_TABLES);
+			foreach my $sql_table_data_line (@sql_table_data) {
+				$sql = "
+					DROP TABLE IF EXISTS
+						`".$sw_software_prefix_wbb.$sql_table_data_line."`
+					;
+				";
+				doSQL($sql);
+			}
+
+			#Drop existing SQL-Tables
+			open(SQL_TABLES_2,'<'.$db_tables_2) or die("Unable to open file: ".$db_tables_2);
+			my @sql_table_data_2 = <SQL_TABLES_2>;
+			chomp (@sql_table_data_2);
+			close(SQL_TABLES_2);
+			foreach my $sql_table_data_line_2 (@sql_table_data_2) {
+				$sql = "
+					DROP TABLE IF EXISTS
+						`".$sw_software_prefix_wcf.$sql_table_data_line_2."`
+					;
+				";
+				doSQL($sql);
+			}
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		}
+	} else {
+		print "[DEGUB] i-MSCP installer file - No Input Data available\n";
+	}	
+}

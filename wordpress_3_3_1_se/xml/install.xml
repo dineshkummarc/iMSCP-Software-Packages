@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>wordpressse</software_installfile>
+	<software_name>Wordpress - Svenska</software_name>
+	<software_version>3.3.1</software_version>
+	<software_language>sv_SE</software_language>
+	<software_type>Blog</software_type>
+	<software_db>true</software_db>
+	<software_prefix>wp_</software_prefix>
+	<software_link>http://sv.wordpress.org</software_link>
+	<software_desc>WordPress är ett modernt publiceringsverktyg med fokus på utseende, webbstandard och användarvänlighet. Det perfekta verktyget för privatperson som företag. WordPress är gratis och ovärderligt på en och samma gång.</software_desc>
+</iMSCP_installer_packet>

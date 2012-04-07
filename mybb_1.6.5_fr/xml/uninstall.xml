@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_uninstaller_packet>
+	<software_deldirs>admin,archive,cache,images,inc,install,jscripts,uploads</software_deldirs>
+	<software_delfiles>announcements.php,attachment.php,calendar.php,captcha.php,css.php,editpost.php,forumdisplay.php,global.php,htaccess.txt,index.php,managegroup.php,memberlist.php,misc.php,modcp.php,moderation.php,newreply.php,newthread.php,online.php,polls.php,portal.php,printthread.php,private.php,ratethread.php,report.php,reputation.php,rss.php,search.php,sendthread.php,showteam.php,showthread.php,stats.php,syndication.php,task.php,usercp.php,usercp2.php,warnings.php,xmlhttp.php</software_delfiles>
+</iMSCP_uninstaller_packet>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>mysqldumperde</software_installfile>
+	<software_name>MySQL Dumper</software_name>
+	<software_version>1.24.4</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>DB-Tool</software_type>
+	<software_db>true</software_db>
+	<software_prefix>not_required</software_prefix>
+	<software_link>http://www.mysqldumper.de</software_link>
+	<software_desc>MySQLDumper ist ein Sicherungsprogramm für MySQL-Datenbanken, geschrieben in PHP und Perl. Damit können Sicherungskopien der Daten (Forum, Shop, Blog, usw.) erstellt und bei Bedarf auch wieder hergestellt werden. Besonders bei Web-Space ohne Shell-Zugang bietet sich MySQLDumper als sinnvolle Alternative an.</software_desc>
+</iMSCP_installer_packet>

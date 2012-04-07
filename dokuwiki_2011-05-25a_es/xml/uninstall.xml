@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_uninstaller_packet>
+	<software_deldirs>bin,conf,data,inc,lib</software_deldirs>
+	<software_delfiles>COPYING,doku.php,feed.php,.htaccess.dist,index.php,install.php,README,VERSION</software_delfiles>
+</iMSCP_uninstaller_packet>

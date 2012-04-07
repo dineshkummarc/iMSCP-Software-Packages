@@ -1,0 +1,325 @@
+﻿#!/usr/bin/perl
+# i-MSCP a internet Multi Server Control Panel
+#
+# Copyright (C) 2010 by internet Multi Server Control Panel - http://i-mscp.net
+#
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.1 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+# License for the specific language governing rights and limitations
+# under the License.
+#
+# The Original Code is "i-MSCP a internet Multi Server Control Panel".
+#
+# The Initial Developer of the Original Code is ispCP Team.
+# Portions created by Initial Developer are Copyright (C) 2010 by
+# i-MSCP a internet Multi Server Control Panel. All Rights Reserved.
+#
+# The i-MSCP Home Page is:
+#
+#    http://i-mscp.net
+#
+
+use Digest::MD5 qw(md5_hex);
+
+use strict;
+use warnings;
+
+################################################################################
+#
+# Load configuration from i-MSCP configuration file
+#
+# @return int 0 on success, negative int otherwise
+#
+sub getConf {
+	my $file;
+	if(-e '/usr/local/etc/imscp/imscp.conf'){
+		$file = '/usr/local/etc/imscp/imscp.conf';
+	} elsif(-e '/etc/imscp/imscp.conf') {
+		$file = '/etc/imscp/imscp.conf';
+	} else {
+		return -1;
+	}
+	return -1 if ! open F, '<', $file;
+	%main::cfg = join('', <F>) =~ /^\s*(\w+)\s*=\s*(.*)$/gm;
+	close F;
+	%main::cfg ? 0 : 1;
+}
+
+my ($sw_database_pass_clear, $sw_database_pass_md5, $sw_install_pass_clear, $sw_install_pass_md5, $sql, $url_path, $DBname, $hostname, $dbUser, $dbPassword);
+my ($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path);
+
+sub extract_variables {
+	my $crypted_array = shift;
+	my $uncrypted_array = decode_base64($crypted_array);
+	($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path)=split(/,/, $uncrypted_array);
+	if($processing_type && $sw_software_prefix && $sw_database && $sw_database_user && $sw_database_tmp_pwd && $sw_install_username && $sw_install_password && $sw_install_email && $domain_name && $sw_dest_path && $sw_path) {
+		if ($sw_database ne "not_required") {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = md5_hex($sw_database_pass_clear);
+			#New database connection to the user database
+			imscp_installer_set_new_db_connection($sw_database,$sw_database_user,$sw_database_pass_clear);
+		} else {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = $sw_database_tmp_pwd;
+		}
+		$sw_install_pass_clear = $sw_install_password;
+		$sw_install_pass_md5 = md5_hex($sw_install_pass_clear);
+	} else {
+		print "[DEGUB] i-MSCP installer file - Some variables not defined in the uncrytped string\n";
+		exit();
+	}
+}
+
+sub imscp_installer_set_new_db_connection {
+	@main::db_connect = undef;
+	$DBname = shift;
+	$dbUser = shift;
+	$dbPassword = shift;
+	$hostname = 'localhost';
+	@main::db_connect = ("DBI:mysql:$DBname:$hostname", $dbUser, $dbPassword);
+}
+
+sub imscp_installer_package_start {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process start\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process start\n";
+	}
+}
+
+sub imscp_installer_package_end {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process end\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process end\n";
+	}
+	setup_main_vars();
+}
+
+if(getConf() != 0) {
+	print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+} else {
+	#
+	# Do not make changes to this static vars
+	#
+	
+	sub get_inc_path {
+		if(getConf() != 0) {
+			print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+		} else {
+			my $imscp_path = $main::cfg{'ROOT_DIR'}.'/engine';
+		}
+	}
+	use lib get_inc_path();
+	require 'imscp_common_code.pl';
+	
+	my $crypted_array = $ARGV[0];
+	if ($crypted_array) {
+		extract_variables("$crypted_array");
+		my $db_tables = "sql_tables";
+		$url_path = $sw_path;
+		$url_path =~ s/^\/.*htdocs//g;
+
+		#
+		# This is the place for dynamic vars
+		#
+
+		my $config_file = "config.php";
+		my $emailadress = $sw_install_email;
+		my $table_users = "user";
+		my $new_table_users = $sw_software_prefix.$table_users;
+		my $table_blog = "blog";
+		my $new_table_blog = $sw_software_prefix.$table_blog;
+		my $table_post = "post";
+		my $new_table_post = $sw_software_prefix.$table_post;
+		my $table_comment = "comment";
+		my $new_table_comment = $sw_software_prefix.$table_comment;
+		
+		if($processing_type eq "install") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+			my $masterkey = `$main::cfg{'CMD_PHP'} -n ./create_key.php`;
+			my $configfile_entry = "<?php
+# -- BEGIN LICENSE BLOCK ---------------------------------------
+#
+# This file is part of Dotclear 2.
+#
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Licensed under the GPL version 2.0 license.
+# See LICENSE file or
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+#
+# -- END LICENSE BLOCK -----------------------------------------
+if (!defined('DC_RC_PATH')) { return; }
+
+/* Database driver (mysql, pgsql, sqlite)*/
+define('DC_DBDRIVER','mysql');
+
+/* Database hostname (usually 'localhost')*/
+define('DC_DBHOST','127.0.0.1');
+
+/* Database user*/
+define('DC_DBUSER','$sw_database_user');
+
+/* Database password*/
+define('DC_DBPASSWORD','$sw_database_pass_clear');
+
+/* Database name*/
+define('DC_DBNAME','$sw_database');
+
+/* Tables' prefix*/
+define('DC_DBPREFIX','$sw_software_prefix');
+
+/* Persistent database connection*/
+define('DC_DBPERSIST',false);
+
+/* Crypt key (password storage)*/
+define('DC_MASTER_KEY','$masterkey');
+
+
+/* Admin URL. You need to set it for some features.*/
+define('DC_ADMIN_URL','http://$domain_name$url_path/admin/');
+
+/* Admin mail from address. For password recovery and such.*/
+define('DC_ADMIN_MAILFROM','webmaster\@$domain_name');
+
+/* Cookie's name*/
+define('DC_SESSION_NAME','dcxd');
+
+/* Plugins root*/
+define('DC_PLUGINS_ROOT',dirname(__FILE__).'/../plugins');
+
+/* Template cache directory*/
+define('DC_TPL_CACHE',dirname(__FILE__).'/../cache');
+
+?>";
+			open(CONFIGFILE,'>'.$sw_dest_path.'/inc/'.$config_file);
+			print CONFIGFILE "$configfile_entry";
+			close CONFIGFILE;
+			
+			#Dump import
+			sys_command("mysql -u".$sw_database_user." -p".$sw_database_pass_clear." ".$sw_database." < ./sql/sql.sql");
+			
+			#Rename SQL-Tables
+			open(SQL_TABLES,'<'.$db_tables) or die("Unable to open file: ".$db_tables);
+			my @sql_table_data = <SQL_TABLES>;
+			chomp (@sql_table_data);
+			close(SQL_TABLES);
+			foreach my $sql_table_data_line (@sql_table_data) {
+				$sql = "
+					RENAME TABLE
+						`".$sql_table_data_line."`
+					TO 
+						`".$sw_software_prefix.$sql_table_data_line."`
+					;
+				";
+				doSQL($sql);
+			}
+			
+			my $setposturl_date = `date '+%Y\/%m\/%d\/'`;
+			my $setdatetime = `date '+%Y-%m-%d %H:%M:%S'`;
+			my $dotclearpasswordhash = `$main::cfg{'CMD_PHP'} -n ./make_password.php $sw_install_pass_clear $masterkey`;
+
+			#Update Datebase with variables
+			$sql = "
+				UPDATE
+					`".$new_table_users."`
+				SET
+					`user_email` = '".$sw_install_email."',
+					`user_id` = '".$sw_install_username."',
+					`user_pwd` = '".$dotclearpasswordhash."',
+					`user_creadt` = '".$setdatetime."',
+					`user_upddt` = '".$setdatetime."',
+					`user_name` = '".$sw_install_username."',
+					`user_firstname` = '".$sw_install_username."'
+				WHERE
+					`user_id` = 'admin'
+				;
+			";
+			doSQL($sql);
+			
+			#Update Datebase with variables
+			$sql = "
+				UPDATE
+					`".$new_table_blog."`
+				SET
+					`blog_creadt` = '".$setdatetime."',
+					`blog_upddt` = '".$setdatetime."',
+					`blog_url` = 'http://".$domain_name.$url_path."/index.php?',
+					`blog_name` = '".$domain_name."'
+				WHERE
+					`blog_id` = 'default'
+				;
+			";
+			doSQL($sql);
+			
+			#Update Datebase with variables
+			$sql = "
+				UPDATE
+					`".$new_table_post."`
+				SET
+					`post_dt` = '".$setdatetime."',
+					`post_creadt` = '".$setdatetime."',
+					`post_upddt` = '".$setdatetime."',
+					`post_url` = '".$setposturl_date."Bienvenue-sur-Dotclear !'
+				WHERE
+					`blog_id` = 'default'
+				;
+			";
+			doSQL($sql);
+			
+			#Update Datebase with variables
+			$sql = "
+				UPDATE
+					`".$new_table_comment."`
+				SET
+					`comment_dt` = '".$setdatetime."',
+					`comment_upddt` = '".$setdatetime."'
+				WHERE
+					`comment_id` = '1'
+				;
+			";
+			doSQL($sql);
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		} elsif ($processing_type eq "uninstall") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+			
+			#Drop existing SQL-Tables
+			open(SQL_TABLES,'<'.$db_tables) or die("Unable to open file: ".$db_tables);
+			my @sql_table_data = <SQL_TABLES>;
+			chomp (@sql_table_data);
+			close(SQL_TABLES);
+			foreach my $sql_table_data_line (@sql_table_data) {
+				$sql = "
+					SET foreign_key_checks = 0
+					;
+				";
+				doSQL($sql);
+				$sql = "
+					DROP TABLE IF EXISTS
+						`".$sw_software_prefix.$sql_table_data_line."`
+					;
+				";
+				doSQL($sql);
+			}
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		}
+	} else {
+		print "[DEGUB] i-MSCP installer file - No Input Data available\n";
+	}	
+}

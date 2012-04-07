@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_uninstaller_packet>
+	<software_deldirs>administrator,cache,cli,components,images,includes,language,libraries,logs,media,modules,plugins,templates,tmp</software_deldirs>
+	<software_delfiles>configuration.php,htaccess.txt,index.php,LICENSE.txt,README.txt,robots.txt,web.config.txt,joomla.xml</software_delfiles>
+</iMSCP_uninstaller_packet>

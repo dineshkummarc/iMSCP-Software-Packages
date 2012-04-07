@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>wordpressdk</software_installfile>
+	<software_name>Wordpress - Dansk</software_name>
+	<software_version>3.3.1</software_version>
+	<software_language>da_DK</software_language>
+	<software_type>Blog</software_type>
+	<software_db>true</software_db>
+	<software_prefix>wp_</software_prefix>
+	<software_link>http://da.wordpress.org</software_link>
+	<software_desc>WordPress er intet mindre end det bedste bloggingværktøj i verden. Det bliver hele tiden forbedret og så er det til og med gratis. HELT gratis.</software_desc>
+</iMSCP_installer_packet>

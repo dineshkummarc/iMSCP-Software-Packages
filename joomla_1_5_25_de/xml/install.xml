@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomlade</software_installfile>
+	<software_name>Joomla</software_name>
+	<software_version>1.5.25</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jos_</software_prefix>
+	<software_link>http://www.joomla.de</software_link>
+	<software_desc>Joomla! macht das Verwalten Ihres Internetauftrittes einfacher, effizienter und professioneller. Mit Joomla! administrieren Sie Ihre Internetpräsenz ganz ohneProgrammierkenntnisse! Joomla! ist ein sogenanntes Content-Management-System (CMS), mit dem sich auf einfache Art und Weise die Inhalte einer Website gestalten lassen. Es eignet sich ausgezeichnet für kleinere und mittlere Auftritte, aber auch große Portale sind mit diesem System bereits realisiert worden. Joomla! ist sehr einfach zu bedienen und sorgt damit für schnellen Erfolg beim Anwender. Ein weiteres Merkmal ist seine Flexibilität. Mit Hilfe einer Fülle von Erweiterungen lassen sich viele zusätzliche Funktionalitäten in Joomla! integrieren. Das Projekt Joomla! ist eine Fortentwicklung des preisgekrönten CMS Mambo.</software_desc>
+</iMSCP_installer_packet>

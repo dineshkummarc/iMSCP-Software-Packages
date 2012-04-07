@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>dokuwikide</software_installfile>
+	<software_name>DokuWiki</software_name>
+	<software_version>2011-05-25a</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>WIKI</software_type>
+	<software_db>false</software_db>
+	<software_prefix>not_required</software_prefix>
+	<software_link>http://www.dokuwiki.org</software_link>
+	<software_desc>DokuWiki ist eine freie Wiki-Software, die anfangs zur einfachen Dokumentation von Projekten gedacht war und mittlerweile für eine Vielzahl von Anwendungen eingesetzt wird. Auf Basis einer einfachen, übersichtlichen Struktur lassen sich mit Erweiterungen (Plugins) weitere Funktionen hinzufügen, etwa für Blogs, Mediendaten oder Arbeitsgruppen. DokuWiki ist unter der GPL 2 lizenziert und in der Programmiersprache PHP geschrieben. Zum Speichern der Inhalte und der Metadaten werden anstatt einer SQL-Datenbank wie bei vielen anderen Wiki-Engines einfache Textdateien verwendet. Inhalt und Metadaten von Wikiseiten werden bei DokuWiki strikt getrennt, um die Wikiquellseiten gut leserlich zu halten. Der vergebene Username wird immer mit Kleinbuchstaben eingetragen!!!</software_desc>
+</iMSCP_installer_packet>

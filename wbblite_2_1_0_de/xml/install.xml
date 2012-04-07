@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>wbblitede</software_installfile>
+	<software_name>WoltLab Burning Board Lite</software_name>
+	<software_version>2.1.0</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>Forum</software_type>
+	<software_db>true</software_db>
+	<software_prefix>wbb1_:wcf1_</software_prefix>
+	<software_link>http://www.woltlab.com/</software_link>
+	<software_desc>WoltLab Burning Board Lite ist der kleine und kostenlose Bruder von WoltLab Burning Board und basiert ebenfalls auf dem WoltLab Community Framework. Es verfügt über alle notwendigen Funktionen für den einfachen Einsatz und stellt eine kostenlose Alternative zum Start eines eigenen Forums dar. Burning Board Lite setzt auf neueste Webstandards mit moderner Programmierung und Barrierefreiheit. Installation, Konfiguration und Bedienung sind einfach gehalten. Der Funktionsumfang ist groß, allerdings, besonders in der Administration, nicht so umfangreich wie der der Vollversion.</software_desc>
+</iMSCP_installer_packet>

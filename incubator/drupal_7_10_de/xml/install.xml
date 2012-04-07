@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>drupalde</software_installfile>
+	<software_name>Drupal</software_name>
+	<software_version>7.10</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>drupal_</software_prefix>
+	<software_link>http://www.drupal.de</software_link>
+	<software_desc>Drupal ist ein Content-Management-System (CMS) und Framework, das ursprünglich vom belgischen Informatiker Dr. Dries Buytaert konzipiert wurde und inzwischen in den unterschiedlichsten Anwendungsbereichen weltweit zum Einsatz kommt. Drupal ist Freie Software und steht unter der GNU General Public License. Es ist in PHP geschrieben und verwendet MySQL oder PostgreSQL als Datenbank (Oracle und SQLite für Drupal 7 in Entwicklung).</software_desc>
+</iMSCP_installer_packet>

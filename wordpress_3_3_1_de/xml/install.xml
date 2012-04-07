@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>wordpressde</software_installfile>
+	<software_name>Wordpress - Deutsch</software_name>
+	<software_version>3.3.1</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>Blog</software_type>
+	<software_db>true</software_db>
+	<software_prefix>wp_</software_prefix>
+	<software_link>http://wpde.org</software_link>
+	<software_desc>WordPress ist ein zeitgemässes Weblog-System zum Veröffentlichen persönlicher Beiträge - den Schwerpunkt bilden Ästhetik, Webstandards und Benutzerfreundlichkeit. WordPress basiert auf PHP und MySQL, ist kostenlos, einfach zu installieren, beliebig erweiterbar und wird allen Ansprüchen an einen professionellen Webauftritt gerecht. WordPress Deutschland ist die zentrale Anlaufstelle der deutschsprachigen WordPress-Nutzer.</software_desc>
+</iMSCP_installer_packet>

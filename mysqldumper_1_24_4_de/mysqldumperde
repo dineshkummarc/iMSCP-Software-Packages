@@ -1,0 +1,325 @@
+#!/usr/bin/perl
+# i-MSCP a internet Multi Server Control Panel
+#
+# Copyright (C) 2010 by internet Multi Server Control Panel - http://i-mscp.net
+#
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.1 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+# License for the specific language governing rights and limitations
+# under the License.
+#
+# The Original Code is "i-MSCP a internet Multi Server Control Panel".
+#
+# The Initial Developer of the Original Code is ispCP Team.
+# Portions created by Initial Developer are Copyright (C) 2010 by
+# i-MSCP a internet Multi Server Control Panel. All Rights Reserved.
+#
+# The i-MSCP Home Page is:
+#
+#    http://i-mscp.net
+#
+
+use Digest::MD5 qw(md5_hex);
+
+use strict;
+use warnings;
+
+################################################################################
+#
+# Load configuration from i-MSCP configuration file
+#
+# @return int 0 on success, negative int otherwise
+#
+sub getConf {
+	my $file;
+	if(-e '/usr/local/etc/imscp/imscp.conf'){
+		$file = '/usr/local/etc/imscp/imscp.conf';
+	} elsif(-e '/etc/imscp/imscp.conf') {
+		$file = '/etc/imscp/imscp.conf';
+	} else {
+		return -1;
+	}
+	return -1 if ! open F, '<', $file;
+	%main::cfg = join('', <F>) =~ /^\s*(\w+)\s*=\s*(.*)$/gm;
+	close F;
+	%main::cfg ? 0 : 1;
+}
+
+my ($sw_database_pass_clear, $sw_database_pass_md5, $sw_install_pass_clear, $sw_install_pass_md5, $sql, $url_path, $DBname, $hostname, $dbUser, $dbPassword);
+my ($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path);
+
+sub extract_variables {
+	my $crypted_array = shift;
+	my $uncrypted_array = decode_base64($crypted_array);
+	($processing_type,$sw_software_db,$sw_software_prefix,$sw_database,$sw_database_user,$sw_database_tmp_pwd,$sw_install_username,$sw_install_password,$sw_install_email,$domain_name,$sw_dest_path,$sw_path)=split(/,/, $uncrypted_array);
+	if($processing_type && $sw_software_prefix && $sw_database && $sw_database_user && $sw_database_tmp_pwd && $sw_install_username && $sw_install_password && $sw_install_email && $domain_name && $sw_dest_path && $sw_path) {
+		if ($sw_database ne "not_required") {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = md5_hex($sw_database_pass_clear);
+			#New database connection to the user database
+			imscp_installer_set_new_db_connection($sw_database,$sw_database_user,$sw_database_pass_clear);
+		} else {
+			$sw_database_pass_clear = $sw_database_tmp_pwd;
+			$sw_database_pass_md5 = $sw_database_tmp_pwd;
+		}
+		$sw_install_pass_clear = $sw_install_password;
+		$sw_install_pass_md5 = md5_hex($sw_install_pass_clear);
+	} else {
+		print "[DEGUB] i-MSCP installer file - Some variables not defined in the uncrytped string\n";
+		exit();
+	}
+}
+
+sub imscp_installer_set_new_db_connection {
+	@main::db_connect = undef;
+	$DBname = shift;
+	$dbUser = shift;
+	$dbPassword = shift;
+	$hostname = 'localhost';
+	@main::db_connect = ("DBI:mysql:$DBname:$hostname", $dbUser, $dbPassword);
+}
+
+sub imscp_installer_package_start {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process start\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process start\n";
+	}
+}
+
+sub imscp_installer_package_end {
+	if($processing_type eq "install") {
+		print "[DEGUB] i-MSCP installer file - installation process end\n";
+	} elsif ($processing_type eq "uninstall") {
+		print "[DEGUB] i-MSCP installer file - uninstallation process end\n";
+	}
+	setup_main_vars();
+}
+
+if(getConf() != 0) {
+	print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+} else {
+	#
+	# Do not make changes to this static vars
+	#
+	
+	sub get_inc_path {
+		if(getConf() != 0) {
+			print "[DEGUB] i-MSCP installer file - Can't load imscp.conf\n";
+		} else {
+			my $imscp_path = $main::cfg{'ROOT_DIR'}.'/engine';
+		}
+	}
+	use lib get_inc_path();
+	require 'imscp_common_code.pl';
+	
+	my $crypted_array = $ARGV[0];
+	if ($crypted_array) {
+		extract_variables("$crypted_array");
+		my $db_tables = "sql_tables";
+		$url_path = $sw_path;
+		$url_path =~ s/^\/.*htdocs//g;
+
+		#
+		# This is the place for dynamic vars
+		#
+		
+		my $mysqldumper_conf_file = "work/config/mysqldumper.conf.php";
+		my $mysqldumper_file = "work/config/mysqldumper.php";
+		
+		if($processing_type eq "install") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+
+			my $mysqldumper_conf_file_entry = "<?php
+#Vars - written by i-mscp application installer
+\$dbhost='localhost';
+\$dbname='$sw_database';
+\$dbuser='$sw_database_user';
+\$dbpass='$sw_database_pass_clear';
+\$dbport=3306;
+\$dbsocket='';
+\$compression=1;
+\$backup_path='$sw_dest_path/work/backup/';
+\$logdatei='$sw_dest_path/work/log/mysqldump_perl.log.gz';
+\$completelogdatei='$sw_dest_path/work/log/mysqldump_perl.complete.log.gz';
+\$sendmail_call='/usr/sbin/sendmail -t -i -f webmaster\@$domain_name';
+\$nl='\\n';
+\$cron_dbindex=-3;
+\$cron_printout=1;
+\$cronmail=0;
+\$cronmail_dump=0;
+\$cronmailto='$sw_install_email';
+\$cronmailto_cc='';
+\$cronmailfrom='$sw_install_email';
+\$cron_use_sendmail=1;
+\$cron_smtp='localhost';
+\$cron_smtp_port='25';
+\@cron_db_array=('$sw_database');
+\@cron_dbpraefix_array=('','');
+\@cron_command_before_dump=('','');
+\@cron_command_after_dump=('','');
+\@ftp_server=('','','');
+\@ftp_port=(21,21,21);
+\@ftp_mode=(0,0,0);
+\@ftp_user=('','','');
+\@ftp_pass=('','','');
+\@ftp_dir=('/','/','/');
+\@ftp_timeout=(30,30,30);
+\@ftp_useSSL=(0,0,0);
+\@ftp_transfer=(0,0,0);
+\$mp=0;
+\$multipart_groesse=0;
+\$email_maxsize=3145728;
+\$auto_delete=0;
+\$max_backup_files=3;
+\$perlspeed=10000;
+\$optimize_tables_beforedump=1;
+\$logcompression=1;
+\$log_maxsize=1048576;
+\$complete_log=1;
+\$my_comment='';
+?>";
+
+			my $mysqldumper_file_entry = "<?php 
+\$config['language'] = 'de';
+\$config['dbhost'] = 'localhost';
+\$config['dbuser'] = '$sw_database_user';
+\$config['dbpass'] = '$sw_database_pass_clear';
+\$config['dbport'] = '';
+\$config['dbsocket'] = '';
+\$config['manual_db'] = '$sw_database';
+\$config['minspeed'] = '100';
+\$config['maxspeed'] = '50000';
+\$config['theme'] = 'msd';
+\$config['interface_server_caption'] = '1';
+\$config['interface_server_captioncolor'] = '#ff9966';
+\$config['interface_server_caption_position'] = '0';
+\$config['interface_sqlboxsize'] = '70';
+\$config['interface_table_compact'] = '0';
+\$config['memory_limit'] = '100000';
+\$config['compression'] = '1';
+\$config['processlist_refresh'] = '3000';
+\$config['empty_db_before_restore'] = '0';
+\$config['optimize_tables_beforedump'] = '1';
+\$config['stop_with_error'] = '1';
+\$config['send_mail'] = '0';
+\$config['send_mail_dump'] = '0';
+\$config['email_recipient'] = '$sw_install_email';
+\$config['email_recipient_cc'] = '';
+\$config['email_sender'] = '$sw_install_email';
+\$config['email_maxsize1'] = '3';
+\$config['email_maxsize2'] = '2';
+\$config['ftp_transfer']=array();
+\$config['ftp_transfer'][0] = '0';
+\$config['ftp_transfer'][1] = '0';
+\$config['ftp_transfer'][2] = '0';
+\$config['ftp_timeout']=array();
+\$config['ftp_timeout'][0] = '30';
+\$config['ftp_timeout'][1] = '30';
+\$config['ftp_timeout'][2] = '30';
+\$config['ftp_useSSL']=array();
+\$config['ftp_useSSL'][0] = '0';
+\$config['ftp_useSSL'][1] = '0';
+\$config['ftp_useSSL'][2] = '0';
+\$config['ftp_mode']=array();
+\$config['ftp_mode'][0] = '0';
+\$config['ftp_mode'][1] = '0';
+\$config['ftp_mode'][2] = '0';
+\$config['ftp_server']=array();
+\$config['ftp_server'][0] = '';
+\$config['ftp_server'][1] = '';
+\$config['ftp_server'][2] = '';
+\$config['ftp_port']=array();
+\$config['ftp_port'][0] = '21';
+\$config['ftp_port'][1] = '21';
+\$config['ftp_port'][2] = '21';
+\$config['ftp_user']=array();
+\$config['ftp_user'][0] = '';
+\$config['ftp_user'][1] = '';
+\$config['ftp_user'][2] = '';
+\$config['ftp_pass']=array();
+\$config['ftp_pass'][0] = '';
+\$config['ftp_pass'][1] = '';
+\$config['ftp_pass'][2] = '';
+\$config['ftp_dir']=array();
+\$config['ftp_dir'][0] = '/';
+\$config['ftp_dir'][1] = '/';
+\$config['ftp_dir'][2] = '/';
+\$config['multi_part'] = '0';
+\$config['multipartgroesse1'] = '0';
+\$config['multipartgroesse2'] = '0';
+\$config['multipart_groesse'] = '0';
+\$config['auto_delete'] = '0';
+\$config['max_backup_files'] = '3';
+\$config['cron_perlpath'] = '/usr/bin/perl';
+\$config['cron_use_sendmail'] = '1';
+\$config['cron_sendmail'] = '/usr/sbin/sendmail -t -i -f webmaster\@$domain_name';
+\$config['cron_smtp'] = 'localhost';
+\$config['cron_smtp_port'] = '25';
+\$config['cron_extender'] = '0';
+\$config['cron_compression'] = '1';
+\$config['cron_printout'] = '1';
+\$config['cron_completelog'] = '1';
+\$config['cron_comment'] = '';
+\$config['multi_dump'] = '0';
+\$config['logcompression'] = '1';
+\$config['log_maxsize1'] = '1';
+\$config['log_maxsize2'] = '2';
+\$config['log_maxsize'] = '1048576';
+\$config['cron_dbindex'] = '-3';
+\$config['email_maxsize'] = '3145728';
+\$config['cron_execution_path'] = 'msd_cron/';
+\$config['sql_limit'] = '30';
+\$config['bb_width'] = '300';
+\$config['bb_textcolor'] = '#000000';
+\$databases['Name']=array();
+\$databases['Name'][0] = '$sw_database';
+\$databases['praefix']=array();
+\$databases['praefix'][0] = '';
+\$databases['command_before_dump']=array();
+\$databases['command_before_dump'][0] = '';
+\$databases['command_after_dump']=array();
+\$databases['command_after_dump'][0] = '';
+\$databases['db_selected_index'] = '0';
+\$databases['db_actual'] = '$sw_database';
+\$databases['multi']=array();
+\$databases['multi_praefix']=array();
+\$databases['multisetting'] = '';
+\$databases['multi_commandbeforedump']=array();
+\$databases['multi_commandafterdump']=array();
+\$databases['multisetting_praefix'] = '';
+\$databases['multisetting_commandbeforedump'] = '';
+\$databases['multisetting_commandafterdump'] = '';
+?>";
+			open(CONFIGFILE,'>'.$sw_dest_path.'/'.$mysqldumper_conf_file);
+			print CONFIGFILE "$mysqldumper_conf_file_entry";
+			close CONFIGFILE;
+
+			open(CONFIGFILE,'>'.$sw_dest_path.'/'.$mysqldumper_file);
+			print CONFIGFILE "$mysqldumper_file_entry";
+			close CONFIGFILE;
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		} elsif ($processing_type eq "uninstall") {
+			## Don't remove this line below ##
+			imscp_installer_package_start(); 
+			##################################
+			
+			## Don't remove this line below ##
+			imscp_installer_package_end();
+			##################################
+		}
+	} else {
+		print "[DEGUB] i-MSCP installer file - No Input Data available\n";
+	}	
+}

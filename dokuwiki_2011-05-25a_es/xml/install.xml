@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>dokuwikies</software_installfile>
+	<software_name>DokuWiki</software_name>
+	<software_version>2011-05-25a</software_version>
+	<software_language>es_ES</software_language>
+	<software_type>WIKI</software_type>
+	<software_db>false</software_db>
+	<software_prefix>not_required</software_prefix>
+	<software_link>http://www.dokuwiki.org</software_link>
+	<software_desc>DokuWiki es un sistema de Wiki de uso sencillo y compatible con los estándares. Orientado a crear documentación de cualquier tipo dentro de grupos de desarrollo, grupos de trabajo y pequeñas empresas. Su sintaxis es simple y potente, facilita la creación de textos estructurados, y permite que los archivos generados sean legibles incluso fuera del Wiki. Todos los datos se guardan en archivos de texto plano, de tal forma que no se necesita base de datos para su funcionamiento.</software_desc>
+</iMSCP_installer_packet>

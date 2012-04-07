@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_uninstaller_packet>
+	<software_deldirs>css,images,inc,js,language,msd_cron,ReadMe,tpl,work</software_deldirs>
+	<software_delfiles>config_overview.php,config.php,dump.php,filemanagement.php,help.php,index.php,log.php,main.php,menu.php,refresh_dblist.php,restore.php,sql.php</software_delfiles>
+</iMSCP_uninstaller_packet>

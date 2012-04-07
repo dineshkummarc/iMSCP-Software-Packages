@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomlade</software_installfile>
+	<software_name>Joomla - Deutsch</software_name>
+	<software_version>2.5.3</software_version>
+	<software_language>de_DE</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jml_</software_prefix>
+	<software_link>http://www.joomla.org</software_link>
+	<software_desc>Joomla! ist ein preisgekröntes Content Management System, welches aus dem Open Source Projekt Mambo hervorgegangen ist und inzwischen weltweit in den unterschiedlichsten Anwendungsgebieten zum Einsatz kommt. Primär zum Erstellen von volldynamischen Webseiten entwickelt, hat sich Joomla! inzwischen zu einem umfangreichen Framework weiterentwickelt, welches auch die Erstellung von aufwendigen Applikationen und Lösungen ermöglicht. Hinter Joomla! steht eine große Gemeinschaft von Entwicklern und Benutzern rund um den Erdball, welche tausende von Erweiterungen und grafischen Oberflächen entwickeln und anbieten, welche dem Benutzer unzählige Variationen und Möglichkeiten bieten.</software_desc>
+</iMSCP_installer_packet>

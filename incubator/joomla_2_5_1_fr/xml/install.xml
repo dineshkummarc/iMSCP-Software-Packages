@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomlafr</software_installfile>
+	<software_name>Joomla - Francais</software_name>
+	<software_version>2.5.1</software_version>
+	<software_language>fr_FR</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jml_</software_prefix>
+	<software_link>http://joomla.fr</software_link>
+	<software_desc>Joomla est un système de gestion de contenu (en anglais, CMS, pour Content Management system) créé par une équipe internationale de développeurs récompensée à maintes reprises, celle-là même qui a hissé Mambo vers les sommets. Et un CMS, c'est quoi?? Pour faire simple, un CMS est un logiciel web qui vous permettra de créer un site internet dynamique en toute simplicité. Joomla! est un CMS Open Source distribué sous license GNU/GPL (gratuit) avec lequel vous pourrez mettre en ligne du contenu et mettre à disposition de vos visiteurs des services (forum, boutique en ligne, galerie photos, etc.), le tout sans connaissance technique particulière.</software_desc>
+</iMSCP_installer_packet>

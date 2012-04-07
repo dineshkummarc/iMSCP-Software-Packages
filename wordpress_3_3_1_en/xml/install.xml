@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>wordpressen</software_installfile>
+	<software_name>Wordpress - English</software_name>
+	<software_version>3.3.1</software_version>
+	<software_language>en_GB</software_language>
+	<software_type>Blog</software_type>
+	<software_db>true</software_db>
+	<software_prefix>wp_</software_prefix>
+	<software_link>http://wordpress.org</software_link>
+	<software_desc>WordPress is web software you can use to create a beautiful website or blog. We like to say that WordPress is both free and priceless at the same time.</software_desc>
+</iMSCP_installer_packet>

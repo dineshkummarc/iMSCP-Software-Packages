@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_uninstaller_packet>
+	<software_deldirs>admin,cache,db,inc,locales,plugins,public,themes</software_deldirs>
+	<software_delfiles>CHANGELOG,CREDITS,index.php,LICENSE,README</software_delfiles>
+</iMSCP_uninstaller_packet>

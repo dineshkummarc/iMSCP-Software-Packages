@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>dotclear_fr</software_installfile>
+	<software_name>Dotclear</software_name>
+	<software_version>2.4.1.2</software_version>
+	<software_language>fr_FR</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>dc_</software_prefix>
+	<software_link>http://fr.dotclear.org/</software_link>
+	<software_desc>Dotclear est un logiciel libre de publication web créé en 2002 par Olivier Meunier. Fruit du travail d'une seule personne à l'origine, le projet s'est rapidement doté d'une équipe constituée de personnalités diverses et d'horizons variés. L'objectif du projet est de fournir un outil simple d'emploi permettant à tout un chacun de publier sur le web et ce, quel que soit son niveau de connaissances techniques. Dotclear est un logiciel libre conçu avant tout pour ses utilisateurs et recevant des contributions régulières de ceux-ci. N'importe qui peut l'utiliser et le modifier selon les termes de la licence d'utilisation.</software_desc>
+</iMSCP_installer_packet>

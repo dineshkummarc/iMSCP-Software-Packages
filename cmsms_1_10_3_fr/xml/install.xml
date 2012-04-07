@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>cms_simple</software_installfile>
+	<software_name>CMS Made Simple</software_name>
+	<software_version>1.10.3</software_version>
+	<software_language>fr_FR</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>cmsms_</software_prefix>
+	<software_link>http://www.cmsmadesimple.fr/</software_link>
+	<software_desc>CMS Made Simple met à votre disposition un moyen rapide et facile de créer un site professionnel et d'en gérer le contenu, et ce, qu'il soit destiné à une petite société ou à une entreprise multinationale !</software_desc>
+</iMSCP_installer_packet>

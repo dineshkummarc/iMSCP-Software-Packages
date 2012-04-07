@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomladk</software_installfile>
+	<software_name>Joomla - Dansk</software_name>
+	<software_version>2.5.3</software_version>
+	<software_language>da_DK</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jml_</software_prefix>
+	<software_link>http://www.joomla.org</software_link>
+	<software_desc>Joomla er et pris-vindende Content Management System (CMS), som gør dig i stand til at bygge websteder og avancerede online applikationer. Mange aspekter, inklusiv dets let-at-anvende og udvidelsesmuligheder, har gjort Joomla til det mest populære websted software der er tilgængelig. Som det bedste af det hele, så er Joomla en open source løsning der er frit tilgængelig for alle.</software_desc>
+</iMSCP_installer_packet>

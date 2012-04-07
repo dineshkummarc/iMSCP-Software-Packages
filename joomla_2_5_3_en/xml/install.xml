@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomlaen</software_installfile>
+	<software_name>Joomla - English</software_name>
+	<software_version>2.5.3</software_version>
+	<software_language>en_GB</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jml_</software_prefix>
+	<software_link>http://www.joomla.org</software_link>
+	<software_desc>Joomla is an award-winning content management system (CMS), which enables you to build Web sites and powerful online applications. Many aspects, including its ease-of-use and extensibility, have made Joomla the most popular Web site software available. Best of all, Joomla is an open source solution that is freely available to everyone.</software_desc>
+</iMSCP_installer_packet>

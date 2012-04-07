@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<iMSCP_installer_packet>
+	<software_installtype>install</software_installtype>
+	<software_installfile>joomlase</software_installfile>
+	<software_name>Joomla - Svenska</software_name>
+	<software_version>2.5.3</software_version>
+	<software_language>sv_SE</software_language>
+	<software_type>CMS</software_type>
+	<software_db>true</software_db>
+	<software_prefix>jml_</software_prefix>
+	<software_link>http://www.joomla.org</software_link>
+	<software_desc>Joomla är ett prisvinnande innehållshanteringssystem (Content Management System (CMS)), som ger dig möjlighet att skapa webbplatser och kraftfulla online-applikationer. Många aspekter, inklusive att Joomla är lättanvänt och utbyggbart, har gjort att Joomla är den mest populära programvaran som finns för att skapa webbplatser. Bäst av allt är att Joomla är en öppen programvara som är gratis för alla.</software_desc>
+</iMSCP_installer_packet>
