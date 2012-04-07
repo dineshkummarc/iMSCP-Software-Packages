@@ -3,7 +3,7 @@
 	<software_installtype>install</software_installtype>
 	<software_installfile>joomlade</software_installfile>
 	<software_name>Joomla - Deutsch</software_name>
-	<software_version>2.5.3</software_version>
+	<software_version>2.5.4</software_version>
 	<software_language>de_DE</software_language>
 	<software_type>CMS</software_type>
 	<software_db>true</software_db>
